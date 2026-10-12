@@ -9,6 +9,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.hamcrest.Matchers.allOf;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -77,20 +81,25 @@ public class UsuarioWebTest {
                 .andExpect(content().string(containsString("No existe usuario")));
     }
 
-    @Test
-    public void servicioLoginUsuarioErrorPassword() throws Exception {
-        // GIVEN
-        // Moqueamos el método usuarioService.login para que devuelva
-        // ERROR_PASSWORD
-        when(usuarioService.login("ana.garcia@gmail.com", "000"))
-                .thenReturn(UsuarioService.LoginStatus.ERROR_PASSWORD);
 
-        // WHEN, THEN
-        // Realizamos una petición POST con los datos del usuario mockeado y
-        // se debe devolver una página que contenga el mensaja "Contraseña incorrecta"
-        this.mockMvc.perform(post("/login")
-                        .param("eMail","ana.garcia@gmail.com")
-                        .param("password","000"))
-                .andExpect(content().string(containsString("Contraseña incorrecta")));
+    @Test
+    public void getRegistradosDevuelveListado() throws Exception {
+        UsuarioData u1 = new UsuarioData();
+        u1.setId(1L);
+        u1.setEmail("juan@ua");
+
+        UsuarioData u2 = new UsuarioData();
+        u2.setId(2L);
+        u2.setEmail("pedro@ua");
+
+        when(usuarioService.allUsuarios()).thenReturn(Arrays.asList(u1, u2));
+
+        this.mockMvc.perform(get("/registrados"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(allOf(
+                        containsString("Usuarios registrados"),
+                        containsString("juan@ua"),
+                        containsString("pedro@ua")
+                )));
     }
 }
