@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -152,5 +154,26 @@ public class UsuarioServiceTest {
         assertThat(usuario.getId()).isEqualTo(usuarioId);
         assertThat(usuario.getEmail()).isEqualTo("user@ua");
         assertThat(usuario.getNombre()).isEqualTo("Usuario Ejemplo");
+    }
+
+    @Test
+    public void testListadoUsuarios() {
+        // GIVEN: Dos usuarios registrados en la base de datos
+        UsuarioData usuario1 = new UsuarioData();
+        usuario1.setEmail("user1@ua");
+        usuario1.setPassword("123");
+        usuarioService.registrar(usuario1);
+
+        UsuarioData usuario2 = new UsuarioData();
+        usuario2.setEmail("user2@ua");
+        usuario2.setPassword("123");
+        usuarioService.registrar(usuario2);
+
+        // WHEN: Se recupera el listado completo
+        List<UsuarioData> usuarios = usuarioService.allUsuarios();
+
+        // THEN: Contiene ambos usuarios
+        assertThat(usuarios).hasSize(2);
+        assertThat(usuarios).extracting("email").contains("user1@ua", "user2@ua");
     }
 }
