@@ -29,6 +29,6 @@ public class UsuarioController {
 
         List<UsuarioData> usuarios = usuarioService.allUsuarios();
         model.addAttribute("usuarios", usuarios);
-        return "listaUsuarios";
+        return "usuarios";
     }
 }
