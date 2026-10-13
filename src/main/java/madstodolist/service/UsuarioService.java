@@ -19,7 +19,7 @@ public class UsuarioService {
 
     Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
-    public enum LoginStatus {LOGIN_OK, USER_NOT_FOUND, ERROR_PASSWORD}
+    public enum LoginStatus {LOGIN_OK, USER_NOT_FOUND, ERROR_PASSWORD, USER_BLOCKED}
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -31,6 +31,8 @@ public class UsuarioService {
         Optional<Usuario> usuario = usuarioRepository.findByEmail(eMail);
         if (!usuario.isPresent()) {
             return LoginStatus.USER_NOT_FOUND;
+        } if (Boolean.TRUE.equals(usuario.get().getBloqueado())) {
+            return LoginStatus.USER_BLOCKED;
         } else if (!usuario.get().getPassword().equals(password)) {
             return LoginStatus.ERROR_PASSWORD;
         } else {
@@ -89,5 +91,19 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public boolean existeAdmin() {
         return usuarioRepository.findByAdminTrue().isPresent();
+    }
+
+    @Transactional
+    public UsuarioData cambiaBloqueoUsuario(Long idUsuario, boolean bloqueado) {
+        Usuario usuario = usuarioRepository.findById(idUsuario).orElse(null);
+        if (usuario == null) {
+            throw new UsuarioServiceException("Usuario no encontrado");
+        }
+        if (Boolean.TRUE.equals(usuario.getAdmin())) {
+            throw new UsuarioServiceException("No se puede bloquear a un administrador");
+        }
+        usuario.setBloqueado(bloqueado);
+        usuario = usuarioRepository.save(usuario);
+        return modelMapper.map(usuario, UsuarioData.class);
     }
 }

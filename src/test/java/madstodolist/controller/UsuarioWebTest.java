@@ -206,4 +206,50 @@ public class UsuarioWebTest {
         this.mockMvc.perform(get("/registrados/1"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    public void adminPuedeBloquearODesbloquearUsuario() throws Exception {
+        UsuarioData admin = new UsuarioData();
+        admin.setId(1L);
+        admin.setAdmin(true);
+
+        UsuarioData usuario = new UsuarioData();
+        usuario.setId(2L);
+        usuario.setBloqueado(false);
+        usuario.setAdmin(false);
+
+        when(managerUserSession.usuarioLogeado()).thenReturn(1L);
+        when(usuarioService.findById(1L)).thenReturn(admin);
+        when(usuarioService.findById(2L)).thenReturn(usuario);
+
+        this.mockMvc.perform(post("/registrados/2"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/registrados"));
+    }
+
+    @Test
+    public void usuarioNoAdminNoPuedeBloquear() throws Exception {
+        UsuarioData usuarioNormal = new UsuarioData();
+        usuarioNormal.setId(2L);
+        usuarioNormal.setAdmin(false);
+
+        when(managerUserSession.usuarioLogeado()).thenReturn(2L);
+        when(usuarioService.findById(2L)).thenReturn(usuarioNormal);
+
+        this.mockMvc.perform(post("/registrados/3"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void loginUsuarioBloqueadoMuestraError() throws Exception {
+        when(usuarioService.login("bloqueado@ua", "123"))
+                .thenReturn(UsuarioService.LoginStatus.USER_BLOCKED);
+
+        this.mockMvc.perform(post("/login")
+                        .param("eMail", "bloqueado@ua")
+                        .param("password", "123"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("formLogin"))
+                .andExpect(content().string(containsString("Usuario bloqueado")));
+    }
 }
