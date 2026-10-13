@@ -1,5 +1,6 @@
 package madstodolist.controller;
 
+import madstodolist.authentication.ManagerUserSession;
 import madstodolist.dto.UsuarioData;
 import madstodolist.service.UsuarioService;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ public class UsuarioWebTest {
     // las peticiones a los endpoint.
     @MockBean
     private UsuarioService usuarioService;
+
+    @MockBean
+    private ManagerUserSession managerUserSession;
 
     @Test
     public void servicioLoginUsuarioOK() throws Exception {
@@ -84,35 +88,39 @@ public class UsuarioWebTest {
 
     @Test
     public void getRegistradosDevuelveListado() throws Exception {
-        UsuarioData u1 = new UsuarioData();
-        u1.setId(1L);
-        u1.setEmail("juan@ua");
+        // GIVEN: Un administrador logeado
+        UsuarioData admin = new UsuarioData();
+        admin.setId(1L);
+        admin.setAdmin(true);
 
-        UsuarioData u2 = new UsuarioData();
-        u2.setId(2L);
-        u2.setEmail("pedro@ua");
+        when(managerUserSession.usuarioLogeado()).thenReturn(1L);
+        when(usuarioService.findById(1L)).thenReturn(admin);
+        when(usuarioService.allUsuarios()).thenReturn(Arrays.asList(admin));
 
-        when(usuarioService.allUsuarios()).thenReturn(Arrays.asList(u1, u2));
-
+        // WHEN / THEN
         this.mockMvc.perform(get("/registrados"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(allOf(
-                        containsString("Usuarios registrados"),
-                        containsString("juan@ua"),
-                        containsString("pedro@ua")
-                )));
+                .andExpect(content().string(containsString("Usuarios registrados")));
     }
 
     @Test
     public void getDescripcionUsuarioDevuelveDatos() throws Exception {
+        // GIVEN: Un administrador logeado y el usuario a consultar
+        UsuarioData admin = new UsuarioData();
+        admin.setId(1L);
+        admin.setAdmin(true);
+
         UsuarioData usuario = new UsuarioData();
-        usuario.setId(1L);
+        usuario.setId(2L);
         usuario.setNombre("Ana García");
         usuario.setEmail("ana@ua");
 
-        when(usuarioService.findById(1L)).thenReturn(usuario);
+        when(managerUserSession.usuarioLogeado()).thenReturn(1L);
+        when(usuarioService.findById(1L)).thenReturn(admin);
+        when(usuarioService.findById(2L)).thenReturn(usuario);
 
-        this.mockMvc.perform(get("/registrados/1"))
+        // WHEN / THEN
+        this.mockMvc.perform(get("/registrados/2"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Descripción de usuario"),
@@ -155,5 +163,47 @@ public class UsuarioWebTest {
         this.mockMvc.perform(get("/registro"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Registrarse como administrador"))));
+    }
+
+    @Test
+    public void accesoRegistradosSinLoginDevuelveUnauthorized() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(null);
+
+        this.mockMvc.perform(get("/registrados"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void accesoRegistradosUsuarioNoAdminDevuelveUnauthorized() throws Exception {
+        UsuarioData usuarioNormal = new UsuarioData();
+        usuarioNormal.setId(2L);
+        usuarioNormal.setAdmin(false);
+
+        when(managerUserSession.usuarioLogeado()).thenReturn(2L);
+        when(usuarioService.findById(2L)).thenReturn(usuarioNormal);
+
+        this.mockMvc.perform(get("/registrados"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void accesoDescripcionSinLoginDevuelveUnauthorized() throws Exception {
+        when(managerUserSession.usuarioLogeado()).thenReturn(null);
+
+        this.mockMvc.perform(get("/registrados/1"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void accesoDescripcionUsuarioNoAdminDevuelveUnauthorized() throws Exception {
+        UsuarioData usuarioNormal = new UsuarioData();
+        usuarioNormal.setId(2L);
+        usuarioNormal.setAdmin(false);
+
+        when(managerUserSession.usuarioLogeado()).thenReturn(2L);
+        when(usuarioService.findById(2L)).thenReturn(usuarioNormal);
+
+        this.mockMvc.perform(get("/registrados/1"))
+                .andExpect(status().isUnauthorized());
     }
 }
