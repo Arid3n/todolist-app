@@ -12,12 +12,16 @@
         <tr>
             <th>Id</th>
             <th>Email</th>
+            <th>Enlace a Descripción</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="u: ${usuarios}">
             <td th:text="${u.id}"></td>
             <td th:text="${u.email}"></td>
+            <td>
+                <a th:href="@{/registrados/{id}(id=${u.id})}" th:text="Link"></a>
+            </td>
         </tr>
         </tbody>
     </table>
@@ -25,4 +29,4 @@
 
 <div th:replace="fragments :: javascript"/>
 </body>
-</html>
+</html>s
