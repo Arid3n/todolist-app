@@ -176,4 +176,40 @@ public class UsuarioServiceTest {
         assertThat(usuarios).hasSize(2);
         assertThat(usuarios).extracting("email").contains("user1@ua", "user2@ua");
     }
+
+    @Test
+    public void testExisteAdmin() {
+        // GIVEN: No hay administradores al inicio
+        assertThat(usuarioService.existeAdmin()).isFalse();
+
+        // WHEN: Registramos un usuario marcado como admin
+        UsuarioData admin = new UsuarioData();
+        admin.setEmail("admin@ua");
+        admin.setPassword("123");
+        admin.setAdmin(true);
+        usuarioService.registrar(admin);
+
+        // THEN: existeAdmin devuelve true
+        assertThat(usuarioService.existeAdmin()).isTrue();
+    }
+
+    @Test
+    public void testNoSePuedeRegistrarMasDeUnAdmin() {
+        // GIVEN: Un primer administrador ya registrado
+        UsuarioData admin1 = new UsuarioData();
+        admin1.setEmail("admin1@ua");
+        admin1.setPassword("123");
+        admin1.setAdmin(true);
+        usuarioService.registrar(admin1);
+
+        // WHEN / THEN: Intentar registrar un segundo admin lanza excepción
+        UsuarioData admin2 = new UsuarioData();
+        admin2.setEmail("admin2@ua");
+        admin2.setPassword("123");
+        admin2.setAdmin(true);
+
+        org.junit.jupiter.api.Assertions.assertThrows(UsuarioServiceException.class, () -> {
+            usuarioService.registrar(admin2);
+        });
+    }
 }
