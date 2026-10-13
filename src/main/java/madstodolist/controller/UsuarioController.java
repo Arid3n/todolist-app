@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -30,5 +31,22 @@ public class UsuarioController {
         List<UsuarioData> usuarios = usuarioService.allUsuarios();
         model.addAttribute("usuarios", usuarios);
         return "usuarios";
+    }
+
+    @GetMapping("/registrados/{id}")
+    public String descripcionUsuario(@PathVariable(value = "id") Long id, Model model) {
+        Long idUsuarioLogeado = managerUserSession.usuarioLogeado();
+        if (idUsuarioLogeado != null) {
+            UsuarioData usuarioLogeado = usuarioService.findById(idUsuarioLogeado);
+            model.addAttribute("usuario", usuarioLogeado);
+        }
+
+        UsuarioData usuarioDescripcion = usuarioService.findById(id);
+        if (usuarioDescripcion == null) {
+            return "redirect:/registrados";
+        }
+
+        model.addAttribute("usuarioDescripcion", usuarioDescripcion);
+        return "descripcionUsuario";
     }
 }

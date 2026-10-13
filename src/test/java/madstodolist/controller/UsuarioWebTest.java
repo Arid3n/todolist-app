@@ -102,4 +102,22 @@ public class UsuarioWebTest {
                         containsString("pedro@ua")
                 )));
     }
+
+    @Test
+    public void getDescripcionUsuarioDevuelveDatos() throws Exception {
+        UsuarioData usuario = new UsuarioData();
+        usuario.setId(1L);
+        usuario.setNombre("Ana García");
+        usuario.setEmail("ana@ua");
+
+        when(usuarioService.findById(1L)).thenReturn(usuario);
+
+        this.mockMvc.perform(get("/registrados/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(allOf(
+                        containsString("Descripción de usuario"),
+                        containsString("Ana García"),
+                        containsString("ana@ua")
+                )));
+    }
 }
