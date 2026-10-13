@@ -52,6 +52,9 @@ public class UsuarioService {
             throw new UsuarioServiceException("El usuario no tiene password");
         else {
             Usuario usuarioNuevo = modelMapper.map(usuario, Usuario.class);
+            if (Boolean.TRUE.equals(usuario.getAdmin()) && existeAdmin()) {
+                throw new UsuarioServiceException("Ya existe un usuario administrador");
+            }
             usuarioNuevo = usuarioRepository.save(usuarioNuevo);
             return modelMapper.map(usuarioNuevo, UsuarioData.class);
         }
@@ -81,5 +84,10 @@ public class UsuarioService {
         return usuarios.stream()
                 .map(usuario -> modelMapper.map(usuario, UsuarioData.class))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existeAdmin() {
+        return usuarioRepository.findByAdminTrue().isPresent();
     }
 }

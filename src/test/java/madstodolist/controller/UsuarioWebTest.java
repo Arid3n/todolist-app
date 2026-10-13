@@ -10,10 +10,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.hamcrest.Matchers.allOf;
 
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -119,5 +119,41 @@ public class UsuarioWebTest {
                         containsString("Ana García"),
                         containsString("ana@ua")
                 )));
+    }
+
+    @Test
+    public void loginAdminRedirigeARegistrados() throws Exception {
+        UsuarioData admin = new UsuarioData();
+        admin.setId(1L);
+        admin.setEmail("admin@ua");
+        admin.setAdmin(true);
+
+        when(usuarioService.login("admin@ua", "123")).thenReturn(UsuarioService.LoginStatus.LOGIN_OK);
+        when(usuarioService.findByEmail("admin@ua")).thenReturn(admin);
+
+        this.mockMvc.perform(post("/login")
+                        .param("eMail", "admin@ua")
+                        .param("password", "123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/registrados"));
+    }
+
+    @Test
+    public void getRegistroMuestraCheckboxSoloSiNoExisteAdmin() throws Exception {
+        // GIVEN: No existe admin
+        when(usuarioService.existeAdmin()).thenReturn(false);
+
+        // WHEN / THEN: Se muestra el checkbox
+        this.mockMvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Registrarse como administrador")));
+
+        // GIVEN: Ya existe admin
+        when(usuarioService.existeAdmin()).thenReturn(true);
+
+        // WHEN / THEN: No aparece el checkbox
+        this.mockMvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Registrarse como administrador"))));
     }
 }
