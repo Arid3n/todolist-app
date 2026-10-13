@@ -13,6 +13,7 @@
             <th>Id</th>
             <th>Email</th>
             <th>Descripción</th>
+            <th>Estado</th>
         </tr>
         </thead>
         <tbody>
@@ -22,6 +23,20 @@
             <td>
                 <a th:href="@{/registrados/{id}(id=${u.id})}" th:text="Link"></a>
             </td>
+            <td>
+                <!-- Si es administrador, no se puede bloquear -->
+                <span th:if="${u.admin}" class="text-muted">Administrador</span>
+
+                <!-- Si no es administrador, mostramos el botón de Bloquear o Desbloquear -->
+                <form th:if="${!u.admin}" th:action="@{/registrados/{id}(id=${u.id})}" method="post" style="display:inline;">
+                    <button th:if="${!u.bloqueado}" type="submit" class="btn btn-warning btn-sm">
+                        Bloquear
+                    </button>
+                    <button th:if="${u.bloqueado}" type="submit" class="btn btn-success btn-sm">
+                        Desbloquear
+                    </button>
+                </form>
+            </td>
         </tr>
         </tbody>
     </table>
@@ -29,4 +44,4 @@
 
 <div th:replace="fragments :: javascript"/>
 </body>
-</html>s
+</html>

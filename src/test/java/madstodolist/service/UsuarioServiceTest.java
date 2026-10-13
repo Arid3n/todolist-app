@@ -212,4 +212,55 @@ public class UsuarioServiceTest {
             usuarioService.registrar(admin2);
         });
     }
+
+    @Test
+    public void loginUsuarioBloqueadoDevuelveUserBlocked() {
+        // GIVEN: Un usuario registrado y bloqueado
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("bloqueado@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+        usuarioService.cambiaBloqueoUsuario(usuario.getId(), true);
+
+        // WHEN: Intenta hacer login con credenciales correctas
+        UsuarioService.LoginStatus status = usuarioService.login("bloqueado@ua", "123");
+
+        // THEN: Devuelve USER_BLOCKED
+        assertThat(status).isEqualTo(UsuarioService.LoginStatus.USER_BLOCKED);
+    }
+
+    @Test
+    public void cambiarBloqueoModificaEstadoCorrectamente() {
+        // GIVEN: Un usuario registrado no bloqueado
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("testbloqueo@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+        assertThat(usuario.getBloqueado()).isFalse();
+
+        // WHEN: Se bloquea
+        UsuarioData bloqueado = usuarioService.cambiaBloqueoUsuario(usuario.getId(), true);
+        // THEN: Está bloqueado
+        assertThat(bloqueado.getBloqueado()).isTrue();
+
+        // WHEN: Se desbloquea
+        UsuarioData desbloqueado = usuarioService.cambiaBloqueoUsuario(usuario.getId(), false);
+        // THEN: Vuelve a estar desbloqueado
+        assertThat(desbloqueado.getBloqueado()).isFalse();
+    }
+
+    @Test
+    public void noSePuedeBloquearAUnAdministrador() {
+        // GIVEN: Un administrador registrado
+        UsuarioData adminNuevo = new UsuarioData();
+        adminNuevo.setEmail("adminbloqueo@ua");
+        adminNuevo.setPassword("123");
+        adminNuevo.setAdmin(true);
+        final UsuarioData adminRegistrado = usuarioService.registrar(adminNuevo);
+
+        // WHEN / THEN: Intentar bloquearlo lanza excepción
+        org.junit.jupiter.api.Assertions.assertThrows(UsuarioServiceException.class, () -> {
+            usuarioService.cambiaBloqueoUsuario(adminRegistrado.getId(), true);
+        });
+    }
 }

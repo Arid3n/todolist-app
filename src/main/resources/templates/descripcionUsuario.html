@@ -11,6 +11,7 @@
         <li><strong>Nombre:</strong> <span th:text="${usuarioDescripcion.nombre}"></span></li>
         <li><strong>Email:</strong> <span th:text="${usuarioDescripcion.email}"></span></li>
         <li><strong>Fecha de nacimiento:</strong> <span th:text="${#dates.format(usuarioDescripcion.fechaNacimiento, 'dd-MM-yyyy')}"></span></li>
+        <li><strong>Estado:</strong> <span th:text="${usuarioDescripcion.bloqueado ? 'Bloqueado' : 'Activo'}"></span></li>
     </ul>
     <a th:href="@{/registrados}">Volver al listado</a>
 </div>
