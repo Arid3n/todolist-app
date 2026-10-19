@@ -250,6 +250,6 @@ public class UsuarioWebTest {
                         .param("password", "123"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("formLogin"))
-                .andExpect(content().string(containsString("String erronea")));
+                .andExpect(content().string(containsString("Usuario bloqueado")));
     }
 }
