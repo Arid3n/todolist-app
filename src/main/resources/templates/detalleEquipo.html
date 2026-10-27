@@ -8,17 +8,33 @@
     <div class="d-flex justify-content-between align-items-center">
         <h2 th:text="'Equipo: ' + ${equipo.nombre}"></h2>
         <div>
+            <!-- Botón para unirse si está logueado y no es miembro -->
             <form th:if="${usuario != null and !esMiembro}"
                   th:action="@{/equipos/{id}/usuarios(id=${equipo.id})}"
                   method="post" class="d-inline">
                 <button type="submit" class="btn btn-success btn-sm">Unirse al equipo</button>
             </form>
+
+            <!-- Botón para salir si está logueado y ya es miembro -->
             <button type="button" class="btn btn-danger btn-sm"
                     th:if="${usuario != null and esMiembro}"
                     th:data-url="@{/equipos/{idEquipo}/usuarios/{idUsuario}(idEquipo=${equipo.id}, idUsuario=${usuario.id})}"
-                    onclick="salirEquipo(this)">
+                    onclick="eliminarRegistro(this, '¿Estás seguro/a de que quieres salir del equipo?', true)">
                 Salir del equipo
             </button>
+
+            <!-- Opciones de administración -->
+            <a th:if="${usuario != null and usuario.admin}"
+               th:href="@{/equipos/{id}/editar(id=${equipo.id})}"
+               class="btn btn-warning btn-sm ml-2">Editar nombre</a>
+
+            <button th:if="${usuario != null and usuario.admin}"
+                    type="button" class="btn btn-outline-danger btn-sm ml-1"
+                    th:data-url="@{/equipos/{id}(id=${equipo.id})}"
+                    onclick="eliminarRegistro(this, '¿Estás seguro/a de que quieres eliminar completamente este equipo?', false, '/equipos')">
+                Eliminar equipo
+            </button>
+
             <a th:href="@{/equipos}" class="btn btn-secondary btn-sm ml-2">Volver al listado</a>
         </div>
     </div>
@@ -30,6 +46,7 @@
             <th>Id</th>
             <th>Email</th>
             <th>Nombre</th>
+            <th th:if="${usuario != null and usuario.admin}">Acción</th>
         </tr>
         </thead>
         <tbody>
@@ -37,9 +54,18 @@
             <td th:text="${u.id}"></td>
             <td th:text="${u.email}"></td>
             <td th:text="${u.nombre}"></td>
+            <td th:if="${usuario != null and usuario.admin}">
+                <button type="button" class="btn btn-danger btn-sm"
+                        th:data-url="@{/equipos/{idEquipo}/usuarios/{idUsuario}(idEquipo=${equipo.id}, idUsuario=${u.id})}"
+                        onclick="eliminarRegistro(this, '¿Estás seguro/a de que quieres expulsar a este usuario del equipo?', true)">
+                    Expulsar
+                </button>
+            </td>
         </tr>
         <tr th:if="${#lists.isEmpty(usuarios)}">
-            <td colspan="3" class="text-center text-muted">Este equipo aún no tiene miembros asignados.</td>
+            <td th:colspan="${usuario != null and usuario.admin ? 4 : 3}" class="text-center text-muted">
+                Este equipo aún no tiene miembros asignados.
+            </td>
         </tr>
         </tbody>
     </table>
@@ -48,23 +74,27 @@
 <div th:replace="fragments :: javascript"></div>
 
 <script type="text/javascript">
-    function salirEquipo(btn) {
+    function eliminarRegistro(btn, mensaje, recargar, urlRedireccion) {
         const url = btn.getAttribute('data-url');
-        if (confirm('¿Estás seguro/a de que quieres salir del equipo?')) {
+        if (confirm(mensaje)) {
             fetch(url, {
                 method: 'DELETE'
-            }).then(function(res) {
+            }).then(function (res) {
                 if (res.ok) {
-                    location.reload();
+                    if (recargar) {
+                        window.location.reload();
+                    } else if (urlRedireccion) {
+                        window.location.href = urlRedireccion;
+                    }
                 } else {
-                    alert('Error al salir del equipo: ' + res.status);
+                    alert('Error en la operación: ' + res.status);
                 }
-            }).catch(function(err) {
-                console.error('Error en fetch:', err);
+            }).catch(function (err) {
+                console.error('Error de red:', err);
+                alert('No se pudo completar la petición.');
             });
         }
     }
 </script>
-
 </body>
 </html>
