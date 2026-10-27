@@ -99,4 +99,13 @@ public class EquipoService {
                 .map(equipo -> modelMapper.map(equipo, EquipoData.class))
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void modificarEquipo(Long idEquipo, String nuevoNombre) {
+        Equipo equipo = equipoRepository.findById(idEquipo).orElse(null);
+        if (equipo == null) {
+            throw new EquipoServiceException("Equipo no encontrado");
+        }
+        equipo.setNombre(nuevoNombre);
+    }
 }

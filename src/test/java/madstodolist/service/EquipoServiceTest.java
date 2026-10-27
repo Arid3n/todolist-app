@@ -148,4 +148,23 @@ public class EquipoServiceTest {
         assertThatThrownBy(() -> equipoService.eliminarUsuarioDeEquipo(equipo.getId(), 999L))
                 .isInstanceOf(EquipoServiceException.class);
     }
+
+    @Test
+    public void modificarEquipoCambiaNombre() {
+        // GIVEN
+        EquipoData equipo = equipoService.crearEquipo("Nombre Inicial");
+
+        // WHEN
+        equipoService.modificarEquipo(equipo.getId(), "Nombre Modificado");
+
+        // THEN
+        EquipoData equipoActualizado = equipoService.recuperarEquipo(equipo.getId());
+        assertThat(equipoActualizado.getNombre()).isEqualTo("Nombre Modificado");
+    }
+
+    @Test
+    public void modificarEquipoLanzaExcepcionSiNoExiste() {
+        assertThatThrownBy(() -> equipoService.modificarEquipo(999L, "Nombre"))
+                .isInstanceOf(EquipoServiceException.class);
+    }
 }
