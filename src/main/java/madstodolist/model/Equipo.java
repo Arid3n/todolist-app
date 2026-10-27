@@ -4,6 +4,8 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Set;
+import java.util.HashSet;
 
 @Entity
 @Table(name = "equipos")
@@ -16,6 +18,23 @@ public class Equipo implements Serializable {
     private Long id;
     @NotNull
     private String nombre;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "equipo_usuario",
+            joinColumns = { @JoinColumn(name = "fk_equipo") },
+            inverseJoinColumns = {@JoinColumn(name = "fk_usuario")})
+    Set<Usuario> usuarios = new HashSet<>();
+
+    public Set<Usuario> getUsuarios() {
+        return usuarios;
+    }
+
+    public void addUsuario(Usuario usuario) {
+        // Hay que actualiar ambas colecciones, porque
+        // JPA/Hibernate no lo hace automáticamente
+        this.getUsuarios().add(usuario);
+        usuario.getEquipos().add(this);
+    }
 
     public Equipo() {
     }
