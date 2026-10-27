@@ -112,4 +112,40 @@ public class EquipoServiceTest {
         assertThatThrownBy(() -> equipoService.añadirUsuarioAEquipo(equipo.getId(), 1L))
                 .isInstanceOf(EquipoServiceException.class);
     }
+
+    @Test
+    public void eliminarUsuarioDeEquipoService() {
+        // GIVEN
+        // Un usuario añadido a un equipo
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("user2@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+        EquipoData equipo = equipoService.crearEquipo("Proyecto 2");
+        equipoService.añadirUsuarioAEquipo(equipo.getId(), usuario.getId());
+
+        // WHEN
+        // Lo eliminamos del equipo
+        equipoService.eliminarUsuarioDeEquipo(equipo.getId(), usuario.getId());
+
+        // THEN
+        // Ya no pertenece a la lista de usuarios del equipo
+        List<UsuarioData> usuarios = equipoService.usuariosEquipo(equipo.getId());
+        assertThat(usuarios).isEmpty();
+    }
+
+    @Test
+    public void eliminarUsuarioDeEquipoLanzaExcepcionSiNoExiste() {
+        // GIVEN
+        EquipoData equipo = equipoService.crearEquipo("Proyecto Excepcion");
+
+        // THEN
+        // Equipo inexistente
+        assertThatThrownBy(() -> equipoService.eliminarUsuarioDeEquipo(999L, 1L))
+                .isInstanceOf(EquipoServiceException.class);
+
+        // Usuario inexistente
+        assertThatThrownBy(() -> equipoService.eliminarUsuarioDeEquipo(equipo.getId(), 999L))
+                .isInstanceOf(EquipoServiceException.class);
+    }
 }
