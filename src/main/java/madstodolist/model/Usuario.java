@@ -32,6 +32,8 @@ public class Usuario implements Serializable {
     // es necesario acceder a la lista de tareas para que se carguen
     @OneToMany(mappedBy = "usuario")
     Set<Tarea> tareas = new HashSet<>();
+    @ManyToMany(mappedBy = "usuarios")
+    Set<Equipo> equipos = new HashSet<>();
 
     // Constructor vacío necesario para JPA/Hibernate.
     // No debe usarse desde la aplicación.
@@ -97,6 +99,7 @@ public class Usuario implements Serializable {
     public Set<Tarea> getTareas() {
         return tareas;
     }
+    public Set<Equipo> getEquipos() { return equipos; }
 
     // Método helper para añadir una tarea a la lista y establecer la relación inversa
     public void addTarea(Tarea tarea) {
