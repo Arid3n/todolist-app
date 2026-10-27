@@ -108,4 +108,16 @@ public class EquipoService {
         }
         equipo.setNombre(nuevoNombre);
     }
+
+    @Transactional
+    public void borrarEquipo(Long idEquipo) {
+        Equipo equipo = equipoRepository.findById(idEquipo).orElse(null);
+        if (equipo == null) {
+            throw new EquipoServiceException("Equipo no encontrado");
+        }
+        for (Usuario usuario : new java.util.HashSet<>(equipo.getUsuarios())) {
+            equipo.removeUsuario(usuario);
+        }
+        equipoRepository.delete(equipo);
+    }
 }
