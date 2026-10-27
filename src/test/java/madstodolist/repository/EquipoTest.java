@@ -124,4 +124,25 @@ public class EquipoTest {
         // THEN
         assertThat(equipos).hasSize(2);
     }
+
+    @Test
+    @Transactional
+    public void eliminarUsuarioDeEquipo() {
+        // GIVEN
+        // Un equipo y un usuario relacionados en la BD
+        Equipo equipo = new Equipo("Proyecto 1");
+        equipoRepository.save(equipo);
+        Usuario usuario = new Usuario("user@ua");
+        usuarioRepository.save(usuario);
+        equipo.addUsuario(usuario);
+
+        // WHEN
+        // Eliminamos al usuario del equipo
+        equipo.removeUsuario(usuario);
+
+        // THEN
+        // La relación se borra en ambos sentidos
+        assertThat(equipo.getUsuarios()).doesNotContain(usuario);
+        assertThat(usuario.getEquipos()).doesNotContain(equipo);
+    }
 }
