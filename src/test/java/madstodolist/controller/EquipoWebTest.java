@@ -2,6 +2,7 @@ package madstodolist.controller;
 
 import madstodolist.authentication.ManagerUserSession;
 import madstodolist.dto.EquipoData;
+import madstodolist.dto.UsuarioData;
 import madstodolist.service.EquipoService;
 import madstodolist.service.UsuarioService;
 import org.junit.jupiter.api.Test;
@@ -50,4 +51,25 @@ public class EquipoWebTest {
                 .andExpect(content().string(containsString("Equipo Alpha")))
                 .andExpect(content().string(containsString("Equipo Beta")));
     }
-}+
+
+    @Test
+    public void getDetalleEquipoDevuelveMiembros() throws Exception {
+        EquipoData equipo = new EquipoData();
+        equipo.setId(1L);
+        equipo.setNombre("Equipo Alpha");
+
+        UsuarioData u = new UsuarioData();
+        u.setId(10L);
+        u.setEmail("alex@ua.es");
+        u.setNombre("Alex");
+
+        when(equipoService.recuperarEquipo(1L)).thenReturn(equipo);
+        when(equipoService.usuariosEquipo(1L)).thenReturn(Arrays.asList(u));
+
+        this.mockMvc.perform(get("/equipos/1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("detalleEquipo"))
+                .andExpect(content().string(containsString("Equipo Alpha")))
+                .andExpect(content().string(containsString("alex@ua.es")));
+    }
+}

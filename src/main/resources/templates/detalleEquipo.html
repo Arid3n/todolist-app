@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments :: head (titulo=${equipo.nombre})"></head>
+<body>
+<nav th:replace="fragments :: navbar (usuario=${usuario})"></nav>
+
+<div class="container mt-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 th:text="'Equipo: ' + ${equipo.nombre}"></h2>
+        <a th:href="@{/equipos}" class="btn btn-secondary btn-sm">Volver al listado</a>
+    </div>
+
+    <h4 class="mt-4">Miembros</h4>
+    <table class="table table-bordered mt-2">
+        <thead class="table-light">
+        <tr>
+            <th>Id</th>
+            <th>Email</th>
+            <th>Nombre</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${usuarios}">
+            <td th:text="${u.id}"></td>
+            <td th:text="${u.email}"></td>
+            <td th:text="${u.nombre}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(usuarios)}">
+            <td colspan="3" class="text-center text-muted">Este equipo aún no tiene miembros asignados.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:replace="fragments :: javascript"></div>
+</body>
+</html>

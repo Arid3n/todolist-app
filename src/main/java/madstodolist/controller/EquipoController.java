@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -38,5 +39,16 @@ public class EquipoController {
         model.addAttribute("equipos", equipos);
         model.addAttribute("usuario", usuarioEnSesion());
         return "listaEquipos";
+    }
+
+    @GetMapping("/equipos/{id}")
+    public String detalleEquipo(@PathVariable("id") Long id, Model model) {
+        EquipoData equipo = equipoService.recuperarEquipo(id);
+        List<UsuarioData> usuarios = equipoService.usuariosEquipo(id);
+
+        model.addAttribute("equipo", equipo);
+        model.addAttribute("usuarios", usuarios);
+        model.addAttribute("usuario", usuarioEnSesion());
+        return "detalleEquipo";
     }
 }
