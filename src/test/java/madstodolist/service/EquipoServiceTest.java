@@ -148,4 +148,55 @@ public class EquipoServiceTest {
         assertThatThrownBy(() -> equipoService.eliminarUsuarioDeEquipo(equipo.getId(), 999L))
                 .isInstanceOf(EquipoServiceException.class);
     }
+
+    @Test
+    public void modificarEquipoCambiaNombre() {
+        // GIVEN
+        EquipoData equipo = equipoService.crearEquipo("Nombre Inicial");
+
+        // WHEN
+        equipoService.modificarEquipo(equipo.getId(), "Nombre Modificado");
+
+        // THEN
+        EquipoData equipoActualizado = equipoService.recuperarEquipo(equipo.getId());
+        assertThat(equipoActualizado.getNombre()).isEqualTo("Nombre Modificado");
+    }
+
+    @Test
+    public void modificarEquipoLanzaExcepcionSiNoExiste() {
+        assertThatThrownBy(() -> equipoService.modificarEquipo(999L, "Nombre"))
+                .isInstanceOf(EquipoServiceException.class);
+    }
+
+    @Test
+    public void borrarEquipoEliminaEquipoYDesvinculaUsuarios() {
+        // GIVEN
+        UsuarioData usuario = new UsuarioData();
+        usuario.setEmail("admin_borrar@ua");
+        usuario.setPassword("123");
+        usuario = usuarioService.registrar(usuario);
+
+        EquipoData equipo = equipoService.crearEquipo("Equipo a Borrar");
+        equipoService.añadirUsuarioAEquipo(equipo.getId(), usuario.getId());
+
+        // WHEN
+        equipoService.borrarEquipo(equipo.getId());
+
+        // THEN
+        // Al intentar recuperar el equipo borrado, debe lanzar EquipoServiceException
+        assertThatThrownBy(() -> equipoService.recuperarEquipo(equipo.getId()))
+                .isInstanceOf(EquipoServiceException.class);
+
+        // Ya no aparece en la lista general de equipos
+        assertThat(equipoService.findAllOrdenadoPorNombre()).doesNotContain(equipo);
+
+        // El usuario sigue existiendo intacto en el sistema
+        assertThat(usuarioService.findById(usuario.getId())).isNotNull();
+    }
+
+    @Test
+    public void borrarEquipoLanzaExcepcionSiNoExiste() {
+        assertThatThrownBy(() -> equipoService.borrarEquipo(999L))
+                .isInstanceOf(EquipoServiceException.class);
+    }
 }

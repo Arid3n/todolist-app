@@ -1,6 +1,7 @@
 package madstodolist.controller;
 
 import madstodolist.authentication.ManagerUserSession;
+import madstodolist.controller.exception.UsuarioNoAutorizadoException;
 import madstodolist.dto.EquipoData;
 import madstodolist.dto.UsuarioData;
 import madstodolist.service.EquipoService;
@@ -72,11 +73,18 @@ public class EquipoController {
     @ResponseBody
     public String salirDeEquipo(@PathVariable("idEquipo") Long idEquipo,
                                 @PathVariable("idUsuario") Long idUsuario) {
-        Long idLogeado = managerUserSession.usuarioLogeado();
-        if (idLogeado != null && idLogeado.equals(idUsuario)) {
-            equipoService.eliminarUsuarioDeEquipo(idEquipo, idUsuario);
+        UsuarioData usuario = usuarioEnSesion();
+        if (usuario == null) {
+            throw new UsuarioNoAutorizadoException();
         }
-        return "";
+
+        // Se permite la acción si es el propio usuario saliendo o si quien ejecuta es admin
+        if (usuario.getId().equals(idUsuario) || Boolean.TRUE.equals(usuario.getAdmin())) {
+            equipoService.eliminarUsuarioDeEquipo(idEquipo, idUsuario);
+            return "";
+        }
+
+        throw new UsuarioNoAutorizadoException();
     }
 
     @GetMapping("/equipos/nuevo")
@@ -98,5 +106,47 @@ public class EquipoController {
         }
         equipoService.crearEquipo(equipoData.getNombre());
         return "redirect:/equipos";
+    }
+
+    @GetMapping("/equipos/{id}/editar")
+    public String formEditarEquipo(@PathVariable("id") Long id, Model model) {
+        UsuarioData usuario = usuarioEnSesion();
+        if (usuario == null) {
+            return "redirect:/login";
+        }
+        if (!Boolean.TRUE.equals(usuario.getAdmin())) {
+            throw new UsuarioNoAutorizadoException();
+        }
+
+        EquipoData equipo = equipoService.recuperarEquipo(id);
+        model.addAttribute("equipoData", equipo);
+        model.addAttribute("usuario", usuario);
+        return "formEditarEquipo";
+    }
+
+    @PostMapping("/equipos/{id}/editar")
+    public String editarEquipo(@PathVariable("id") Long id, @ModelAttribute EquipoData equipoData) {
+        UsuarioData usuario = usuarioEnSesion();
+        if (usuario == null) {
+            return "redirect:/login";
+        }
+        if (!Boolean.TRUE.equals(usuario.getAdmin())) {
+            throw new UsuarioNoAutorizadoException();
+        }
+
+        equipoService.modificarEquipo(id, equipoData.getNombre());
+        return "redirect:/equipos/" + id;
+    }
+
+    @DeleteMapping("/equipos/{id}")
+    @ResponseBody
+    public String borrarEquipo(@PathVariable("id") Long id) {
+        UsuarioData usuario = usuarioEnSesion();
+        if (usuario == null || !Boolean.TRUE.equals(usuario.getAdmin())) {
+            throw new UsuarioNoAutorizadoException();
+        }
+
+        equipoService.borrarEquipo(id);
+        return "";
     }
 }
