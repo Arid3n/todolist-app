@@ -13,11 +13,12 @@
                   method="post" class="d-inline">
                 <button type="submit" class="btn btn-success btn-sm">Unirse al equipo</button>
             </form>
-            <form th:if="${usuario != null and esMiembro}"
-                  th:action="@{/equipos/{idEquipo}/usuarios/{idUsuario}(idEquipo=${equipo.id}, idUsuario=${usuario.id})}"
-                  th:method="delete" class="d-inline">
-                <button type="submit" class="btn btn-danger btn-sm">Salir del equipo</button>
-            </form>
+            <button type="button" class="btn btn-danger btn-sm"
+                    th:if="${usuario != null and esMiembro}"
+                    th:data-url="@{/equipos/{idEquipo}/usuarios/{idUsuario}(idEquipo=${equipo.id}, idUsuario=${usuario.id})}"
+                    onclick="salirEquipo(this)">
+                Salir del equipo
+            </button>
             <a th:href="@{/equipos}" class="btn btn-secondary btn-sm ml-2">Volver al listado</a>
         </div>
     </div>
@@ -45,5 +46,25 @@
 </div>
 
 <div th:replace="fragments :: javascript"></div>
+
+<script type="text/javascript">
+    function salirEquipo(btn) {
+        const url = btn.getAttribute('data-url');
+        if (confirm('¿Estás seguro/a de que quieres salir del equipo?')) {
+            fetch(url, {
+                method: 'DELETE'
+            }).then(function(res) {
+                if (res.ok) {
+                    location.reload();
+                } else {
+                    alert('Error al salir del equipo: ' + res.status);
+                }
+            }).catch(function(err) {
+                console.error('Error en fetch:', err);
+            });
+        }
+    }
+</script>
+
 </body>
 </html>
