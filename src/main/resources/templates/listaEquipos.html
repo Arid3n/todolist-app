@@ -25,7 +25,7 @@
                 <a th:href="@{/equipos/{id}(id=${equipo.id})}" th:text="${equipo.nombre}"></a>
             </td>
             <td>
-                <a class="btn btn-primary btn-sm" th:href="@{/equipos/{id}(id=${equipo.id})}">Ver miembros</a>
+                <a class="btn btn-primary btn-sm" th:href="@{/equipos/{id}(id=${equipo.id})}">Ver detalle</a>
                 <a th:if="${usuario != null and usuario.admin}"
                    class="btn btn-warning btn-sm ml-1"
                    th:href="@{/equipos/{id}/editar(id=${equipo.id})}">Editar</a>

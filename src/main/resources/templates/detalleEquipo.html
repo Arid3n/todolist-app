@@ -8,33 +8,26 @@
     <div class="d-flex justify-content-between align-items-center">
         <h2 th:text="'Equipo: ' + ${equipo.nombre}"></h2>
         <div>
-            <!-- Botón para unirse si está logueado y no es miembro -->
             <form th:if="${usuario != null and !esMiembro}"
                   th:action="@{/equipos/{id}/usuarios(id=${equipo.id})}"
                   method="post" class="d-inline">
                 <button type="submit" class="btn btn-success btn-sm">Unirse al equipo</button>
             </form>
-
-            <!-- Botón para salir si está logueado y ya es miembro -->
             <button type="button" class="btn btn-danger btn-sm"
                     th:if="${usuario != null and esMiembro}"
                     th:data-url="@{/equipos/{idEquipo}/usuarios/{idUsuario}(idEquipo=${equipo.id}, idUsuario=${usuario.id})}"
                     onclick="eliminarRegistro(this, '¿Estás seguro/a de que quieres salir del equipo?', true)">
                 Salir del equipo
             </button>
-
-            <!-- Opciones de administración -->
             <a th:if="${usuario != null and usuario.admin}"
                th:href="@{/equipos/{id}/editar(id=${equipo.id})}"
                class="btn btn-warning btn-sm ml-2">Editar nombre</a>
-
             <button th:if="${usuario != null and usuario.admin}"
                     type="button" class="btn btn-outline-danger btn-sm ml-1"
                     th:data-url="@{/equipos/{id}(id=${equipo.id})}"
                     onclick="eliminarRegistro(this, '¿Estás seguro/a de que quieres eliminar completamente este equipo?', false, '/equipos')">
                 Eliminar equipo
             </button>
-
             <a th:href="@{/equipos}" class="btn btn-secondary btn-sm ml-2">Volver al listado</a>
         </div>
     </div>
